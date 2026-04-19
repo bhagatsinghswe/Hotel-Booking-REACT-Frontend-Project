@@ -1,51 +1,59 @@
-import { createContext, useContext, useEffect, useState } from "react"
-import useQuery from "../hooks/useQuery";
-import API_CONFIG from "@/config/api.config";
+import { createContext, useContext, useEffect, useState } from 'react';
+import useQuery from '../hooks/useQuery';
+import API_CONFIG from '@/config/api.config';
 
 const AuthContext = createContext({
   isAuthenticated: false,
-  setIsAuthenticated: () => {}
-})
+  setIsAuthenticated: () => {},
+});
 
-const AuthContextProvider = ({children}) => {
-
+const AuthContextProvider = ({ children }) => {
   const [authenticatedUser, setAuthenticatedUser] = useState({
     user: null,
     isAuthenticated: false,
   });
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    pending,
+    refetchQuery,
+  } = useQuery({
     url: API_CONFIG.USER.PROFILE,
   });
 
   useEffect(() => {
     setAuthenticatedUser({
       isAuthenticated: true,
-      user: data
-    })
+      user: data,
+    });
   }, [data]);
 
-  if(isLoading) return <p>Loading....</p>;
+  if (pending) return <p>Loading....</p>;
 
   return (
-    <AuthContext value={{
-      authenticatedUser, 
-      setAuthenticatedUser
-    }}>
+    <AuthContext
+      value={{
+        authenticatedUser,
+        setAuthenticatedUser,
+        refetchCurrentUser: refetchQuery,
+      }}
+    >
       {children}
     </AuthContext>
-  )
-}
+  );
+};
 
 const useAuthContext = () => {
   const context = useContext(AuthContext);
 
-  if(!context) {
-    throw new Error("userAuthContext must be used within the AuthContextProvider")
+  if (!context) {
+    throw new Error(
+      'userAuthContext must be used within the AuthContextProvider'
+    );
   }
 
   return context;
-}
+};
 
-export {useAuthContext}
+export { useAuthContext };
 export default AuthContextProvider;
